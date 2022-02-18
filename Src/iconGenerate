@@ -1,0 +1,56 @@
+#!/bin/bash
+set -e
+
+CURRENT_DIR=$(cd `dirname $0`; pwd)
+pushd ${CURRENT_DIR}
+
+echo "参考网址：https://zhuanlan.zhihu.com/p/348599140"
+echo "当前目录为 ${CURRENT_DIR}"
+
+iconFileName=icon.png
+iconsFile="${CURRENT_DIR}/${iconFileName}"
+tempDir="${CURRENT_DIR}/temp.iconset"
+dstIconFile="${CURRENT_DIR}/icon.icns"
+
+if [[ ! -f "$iconsFile" ]]; then
+  echo "该路径下无法找到图标文件（${iconFileName}） ---- $iconsFile"
+  exit 1
+else
+  imageWidth=`sips --getProperty pixelWidth "$iconsFile" | awk '/pixelWidth/ {print $2}'`
+  imageHeight=`sips --getProperty pixelHeight "$iconsFile" | awk '/pixelHeight/ {print $2}'`
+  if [ $imageWidth -ne 1024 ] || [ $imageHeight -ne 1024 ]; then
+  	echo "读取到图片尺寸为 ${imageWidth} x ${imageHeight}，请选择1024x1024的图标文件"
+  	exit 1
+  fi
+fi
+
+
+rm -Rf ${tempDir}
+rm -f ${dstIconFile}
+
+mkdir ${tempDir}
+
+sips -z 16 16 ${iconsFile} -o ${tempDir}/icon_16x16.png
+sips -z 32 32 ${iconsFile} -o ${tempDir}/icon_16x16@2x.png
+sips -z 32 32 ${iconsFile} -o ${tempDir}/icon_32x32.png
+sips -z 64 64 ${iconsFile} -o ${tempDir}/icon_32x32@2x.png
+sips -z 128 128 ${iconsFile} -o ${tempDir}/icon_128x128.png
+sips -z 256 256 ${iconsFile} -o ${tempDir}/icon_128x128@2x.png
+sips -z 256 256 ${iconsFile} -o ${tempDir}/icon_256x256.png
+sips -z 512 512 ${iconsFile} -o ${tempDir}/icon_256x256@2x.png
+sips -z 512 512 ${iconsFile} -o ${tempDir}/icon_512x512.png
+sips -z 1024 1024 ${iconsFile} -o ${tempDir}/icon_512x512@2x.png
+
+
+iconutil -c icns ${tempDir} -o ${dstIconFile}
+rm -Rf ${tempDir}
+
+
+if [[ ! -f "$dstIconFile" ]]; then
+   echo "图标生成失败"
+else
+   echo "图标文件生成在 ${dstIconFile}"
+fi
+
+popd # ${CURRENT_DIR}
+
